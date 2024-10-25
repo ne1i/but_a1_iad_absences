@@ -45,8 +45,8 @@ enum estDefaillant
 
 enum estValide
 {
-    NON_VALIDE,
-    VALIDE
+    NON_VALIDE, // quand une absence n'a pas été affectée par la commande "validation"
+    VALIDE      // quand une absence a été affectée par la commande "validation"
 };
 
 typedef struct
@@ -59,7 +59,7 @@ typedef struct
     int date;
     int date_justification;
     enum AbsenceStatus justified;
-    int valide;
+    int valide; // indique si l'absence a été affectée par la commande "vvalidation"
 
 } Absence;
 
@@ -311,11 +311,11 @@ void handle_absence(const ParsedCommand parsed_command, int *nb_students, int *n
         }
     }
     student->nb_absence++;
-    absence->id_absence = ++*(nb_absences);
+    absence->id_absence = ++*(nb_absences); // incrémente le nombre d'absence total et l'assigne à l'id de l'absence de l'élève
     absence->justified = ABSENCE_WAITING_JUSTIFICATION;
     absence->date = atoi(parsed_command.arguments_list[1]);
     absence->student_id = atoi(parsed_command.arguments_list[0]);
-    absence->valide = NON_VALIDE;
+    absence->valide = NON_VALIDE; // l'absence n'a pas encore été affectée par la commande "validation"
     strcpy(absence->justification, "");
     printf("Absence enregistree [%d]\n", absence->id_absence);
 }
@@ -597,7 +597,7 @@ void handle_validation(const ParsedCommand parsed_command, int nb_students, int 
         return;
     }
 
-    char validation_code[VALIDATION_CODE_LENGTH]; // 3 car "ok\0" ou "ko\0"
+    char validation_code[VALIDATION_CODE_LENGTH];
     strcpy(validation_code, parsed_command.arguments_list[1]);
     if (strcmp(validation_code, "ok") != 0 && strcmp(validation_code, "ko") != 0)
     {
@@ -863,6 +863,7 @@ int count_absences_injustifiees_before(const Student student, int date)
     return count;
 }
 
+// fonction qui permet d'utiliser la fonction calloc qui plante le processus si aucune mémoire n'a pu être allouée
 void *safe_calloc(size_t n)
 {
     void *p = calloc(1, n);
@@ -871,5 +872,5 @@ void *safe_calloc(size_t n)
         fprintf(stderr, "Fatal: failed to allocate %zu bytes.\n", n);
         abort();
     }
-    return p;
+    return p; // void pointer vers la mémoire allouée
 }
